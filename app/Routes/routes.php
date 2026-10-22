@@ -19,6 +19,15 @@ return static function (Slim\App $app): void {
     //* ROUTE: GET /players
     //$app->get('/players', [PlayersController::class, 'handleGetPlayers']);
 
+//* ROUTE: POST /ART
+
+    $app->post("/art", [ArtController::class, 'handleCreateArt']);
+
+
+
+
+
+
     //* ROUTE: GET /ping
     $app->get('/ping', function (Request $request, Response $response, $args) {
 
