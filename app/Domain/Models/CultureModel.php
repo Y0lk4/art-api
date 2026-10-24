@@ -13,7 +13,7 @@ class CultureModel extends BaseModel
         $culture_name = $filters["culture_name"] ?? '';
         if (!empty($culture_name)) {
             $sql .= " AND culture_name LIKE CONCAT('%', :culture_name, '%')";
-            $filter_values["name"] = $culture_name;
+            $filter_values["culture_name"] = $culture_name;
         }
 
         $region = $filters["region"] ?? '';
@@ -34,7 +34,7 @@ class CultureModel extends BaseModel
             $filter_values["continent"] = strtolower($continent);
         }
 
-        if (!isset($filters["is_extinct_culture"]) && $filters["is_extinct_culture"] !== '') {
+        if (isset($filters["is_extinct_culture"]) && $filters["is_extinct_culture"] !== '') {
             $sql .= " AND is_extinct_culture = :is_extinct_culture";
             $filter_values["is_extinct_culture"] = filter_var($filters["is_extinct_culture"], FILTER_VALIDATE_BOOL) ? 1 : 0 ;
         }
@@ -54,6 +54,6 @@ class CultureModel extends BaseModel
 
     public function createCultures(array $cultures)
     {
-        $this->insert("cultures", $cultures);
+        $this->insert("culture", $cultures);
     }
 }
