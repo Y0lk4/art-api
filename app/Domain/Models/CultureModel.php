@@ -6,6 +6,7 @@ class CultureModel extends BaseModel
 {
     public function getCultures(array $filters): array
     {
+
         $filter_values = [];
         //Execute SQL Query to read the list of cultures
         $sql = "SELECT * FROM culture WHERE 1";
@@ -38,6 +39,33 @@ class CultureModel extends BaseModel
             $sql .= " AND is_extinct_culture = :is_extinct_culture";
             $filter_values["is_extinct_culture"] = filter_var($filters["is_extinct_culture"], FILTER_VALIDATE_BOOL) ? 1 : 0 ;
         }
+
+        $sortBy = $filters['sort'] ?? 'id';
+        $order = $filters['order'] ?? 'ASC';
+
+    
+        $validOrders = ['asc','desc'];
+        $order = strtoupper($order);
+
+        $sortMap = [
+            'id'        => 'culture_id',
+            'name'      => 'culture_name',
+            'region'    => 'region',
+            'continent' => 'continent',
+            'start'     => 'time_period_start',
+            'end'       => 'time_period_end',
+            'created'   => 'created_at'
+        ];
+        if (!array_key_exists($sortBy, $sortMap)) {
+            throw new \InvalidArgumentException("Invalid sort field: {$sortBy}");
+        }
+
+        if (!in_array(strtolower($order), $validOrders)) {
+            throw new \InvalidArgumentException("Invalid sort order: {$order}");
+        }
+        $actualField = $sortMap[$sortBy] ?? 'id';
+       
+        $sql .= " ORDER BY {$actualField} {$order}";
 
         $culture = $this->paginate($sql, $filter_values);
 
