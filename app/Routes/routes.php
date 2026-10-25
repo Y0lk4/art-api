@@ -48,5 +48,12 @@ return static function (Slim\App $app): void {
 
     //* ROUTE:POST /cultures
     $app->post("/cultures", [CultureController::class, "handleCreateCultures"]);
-    
+
+    //* ROUTE: GET /cultures/{culture_id}/
+    $app->get('/cultures', [CultureController::class, 'handleGetCultures']);
+    $app->get('/cultures/{culture_id}', [CultureController::class, 'handleGetCultureById']);
+    $app->get('/cultures/{culture_id}/anthropology', [CultureController::class, 'handleGetCultureAnthropology']);
+    $app->get('/cultures/{culture_id}/timeline', [CultureController::class, 'handleGetCultureTimeline']);
+
+
 };
