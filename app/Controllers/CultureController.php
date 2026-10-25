@@ -7,6 +7,7 @@ use App\Domain\Models\CultureModel;
 use App\Domain\Services\CulturesService;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
+use Slim\Exception\HttpBadRequestException;
 use Slim\Exception\HttpNotFoundException;
 use Psr\Container\ContainerInterface;
 
@@ -44,8 +45,7 @@ class CultureController extends BaseController
         $culture_id = $args["culture_id"];
         $pattern = "/^\d{1,9}$/";
         if (preg_match($pattern, $culture_id) === 0) {
-            echo "Invalid";
-            exit;
+            throw new HttpBadRequestException($request, "Invalid culture ID format.");
         }
         echo "Valid";
         // 2) Get the matching culture record from the database.
@@ -56,6 +56,7 @@ class CultureController extends BaseController
 
         //! What if no record was returned/found? 2nd edge case
         // Option 1): Throw an HTTPSpecializedException
+        
 
         // Option 2): Prepare a valid HTTP Error Response yourself.
 
