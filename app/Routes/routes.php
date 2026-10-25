@@ -48,4 +48,5 @@ return static function (Slim\App $app): void {
 
     //* ROUTE:POST /cultures
     $app->post("/cultures", [CultureController::class, "handleCreateCultures"]);
+    
 };
