@@ -3,6 +3,8 @@
 declare(strict_types=1);
 
 use App\Controllers\AboutController;
+use App\Controllers\ExhibitController;
+use App\Domain\Services\ExhibitsService;
 use App\Controllers\CultureController;
 use App\Helpers\DateTimeHelper;
 use Psr\Http\Message\ResponseInterface as Response;
@@ -15,6 +17,12 @@ return static function (Slim\App $app): void {
 
     //* ROUTE: GET /
     $app->get('/', [AboutController::class, 'handleAboutWebService']);
+    $app->get('/exhibits', [ExhibitController::class, 'handleGetExhibits']);
+    $app->get('/exhibits/{exhibit_id}', [ExhibitController::class, 'handleGetByExhibitId']);
+    $app->get('/exhibits/{location_id', [ExhibitController::class, 'handleGetByLocationId']);
+
+    //* ROUTE: POST /exhibits
+    $app->post('/exhibits', [ExhibitController::class, 'handleCreateExhibit']);
 
     //* NOTE: callback naming pattern: handle<ActionName>, e.g. handleGetPlayers
     //* ROUTE: GET /players
