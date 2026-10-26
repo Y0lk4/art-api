@@ -3,10 +3,11 @@
 declare(strict_types=1);
 
 use App\Controllers\AboutController;
-use App\Controllers\ExhibitController;
 use App\Domain\Services\ExhibitsService;
+use App\Controllers\ExhibitController;
 use App\Controllers\CultureController;
 use App\Helpers\DateTimeHelper;
+use App\Controllers\ExhibitObjectController;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
 
@@ -19,7 +20,11 @@ return static function (Slim\App $app): void {
     $app->get('/', [AboutController::class, 'handleAboutWebService']);
     $app->get('/exhibits', [ExhibitController::class, 'handleGetExhibits']);
     $app->get('/exhibits/{exhibit_id}', [ExhibitController::class, 'handleGetByExhibitId']);
-    $app->get('/exhibits/{location_id', [ExhibitController::class, 'handleGetByLocationId']);
+    $app->get('/exhibits/{location_id}', [ExhibitController::class, 'handleGetByLocationId']);
+
+    $app->get('/exhibits/objects', [ExhibitObjectController::class, 'handleGetExhibitObjects']);
+    $app->get('/exhibits/objects/{exhibit_object_id}', [ExhibitObjectController::class, 'handleGetByExhibitObjectId']);
+    $app->get('/exhibits/{exhibit_id}/objects', [ExhibitObjectController::class, 'handleGetByExhibitId']);
 
     //* ROUTE: POST /exhibits
     $app->post('/exhibits', [ExhibitController::class, 'handleCreateExhibit']);

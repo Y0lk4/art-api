@@ -2,13 +2,11 @@
 
 namespace App\Controllers;
 
-use App\Domain\Models\ExhibitModel;
 use App\Domain\Services\ExhibitsService;
-use Override;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
+use App\Domain\Models\ExhibitModel;
 use Slim\Exception\HttpBadRequestException;
-
 use Slim\Exception\HttpNotFoundException;
 use function DI\string;
 

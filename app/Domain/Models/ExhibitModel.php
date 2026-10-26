@@ -11,7 +11,7 @@ class ExhibitModel extends BaseModel
 
         $filter_values = [];
         // Execute SQL Query to read the list of vendors.
-        $sql = "SELECT * from exhibits WHERE 1";
+        $sql = "SELECT * from exhibit WHERE 1";
 
         $exhibit_name = $filters["name"] ?? '';
         $visibility = $filters["visibility"] ?? '';
@@ -49,7 +49,7 @@ class ExhibitModel extends BaseModel
         }
 
         if (!empty($visibility)) {
-            $sql .= " AND visibility = : visibility";
+            $sql .= " AND visibility = :visibility";
             $filter_values["visibility"] = $visibility;
         }
 
@@ -87,7 +87,7 @@ class ExhibitModel extends BaseModel
     public function getExhibitById(int $id): array | false
     {
         // either use ? or named placeholders, named placeholders are preferred cuz its clearer
-        $sql = 'SELECT * FROM exhibits WHERE exhibit_id = :exhibit_id';
+        $sql = 'SELECT * FROM exhibit WHERE exhibit_id = :exhibit_id';
 
         
 
@@ -104,6 +104,10 @@ class ExhibitModel extends BaseModel
     {
         // either use ? or named placeholders, named placeholders are preferred cuz its clearer
         $sql = 'SELECT * FROM exhibits WHERE location_id = :location_id';
+
+        $filter_values = [
+        'location_id' => $id
+        ];
 
         $sortBy = $filters['sort'] ?? 'exhibit_id';
         $order = $filters['order'] ?? 'ASC';
@@ -133,11 +137,11 @@ class ExhibitModel extends BaseModel
 
         $sql .= " ORDER BY {$sortValues[$sortBy]} {$order}";
 
-        return $this->paginate($sql);
+        return $this->paginate($sql,$filter_values);
     }
 
     public function createExhibit(array $exhibit)
     {
-        return $this->insert("exhibits", $exhibit);
+        return $this->insert("exhibit", $exhibit);
     }
 }
