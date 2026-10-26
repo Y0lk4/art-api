@@ -11,7 +11,9 @@ class ExhibitModel extends BaseModel
 
         $filter_values = [];
         // Execute SQL Query to read the list of vendors.
-        $sql = "SELECT * from exhibits WHERE 1";
+        $sql = "SELECT e.*, l.country_code
+        FROM exhibit e LEFT JOIN location l
+        ON e.location_id = l.location_id WHERE 1";
 
         $exhibit_name = $filters["name"] ?? '';
         $visibility = $filters["visibility"] ?? '';
@@ -49,7 +51,7 @@ class ExhibitModel extends BaseModel
         }
 
         if (!empty($visibility)) {
-            $sql .= " AND visibility = : visibility";
+            $sql .= " AND visibility = :visibility";
             $filter_values["visibility"] = $visibility;
         }
 
@@ -87,9 +89,10 @@ class ExhibitModel extends BaseModel
     public function getExhibitById(int $id): array | false
     {
         // either use ? or named placeholders, named placeholders are preferred cuz its clearer
-        $sql = 'SELECT * FROM exhibits WHERE exhibit_id = :exhibit_id';
-
-        
+        $sql = 'SELECT e.*, l.country_code 
+                FROM exhibit e 
+                LEFT JOIN location l ON e.location_id = l.location_id 
+                WHERE e.exhibit_id = :exhibit_id';
 
         //fetchSingle returns mixed, mixed returns an array of boolean
         return $this->fetchSingle(
@@ -103,7 +106,14 @@ class ExhibitModel extends BaseModel
     public function getExhibitsByLocationId(int $id, array $filters): array | false
     {
         // either use ? or named placeholders, named placeholders are preferred cuz its clearer
-        $sql = 'SELECT * FROM exhibits WHERE location_id = :location_id';
+        $sql = 'SELECT e.*, l.country_code 
+                FROM exhibit e 
+                LEFT JOIN location l ON e.location_id = l.location_id 
+                WHERE e.location_id = :location_id';
+
+        $filter_values = [
+        'location_id' => $id
+        ];
 
         $sortBy = $filters['sort'] ?? 'exhibit_id';
         $order = $filters['order'] ?? 'ASC';
@@ -133,11 +143,11 @@ class ExhibitModel extends BaseModel
 
         $sql .= " ORDER BY {$sortValues[$sortBy]} {$order}";
 
-        return $this->paginate($sql);
+        return $this->paginate($sql,$filter_values);
     }
 
     public function createExhibit(array $exhibit)
     {
-        return $this->insert("exhibits", $exhibit);
+        return $this->insert("exhibit", $exhibit);
     }
 }
