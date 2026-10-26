@@ -1,0 +1,13 @@
+openapi: 3.1.0
+info:
+  title: Artifacts API
+  description: API endpoints for managing artifacts, their culture, their artists and the exhibits they appeared in.
+  version: 1.0.0
+servers:
+  - url: https://api.server.test/v1
+paths:
+  /test:
+    get:
+      responses:
+        '200':
+          description: OK

@@ -20,6 +20,16 @@ return static function (Slim\App $app): void {
 
     //* ROUTE: GET /
     $app->get('/', [AboutController::class, 'handleAboutWebService']);
+    $app->get('/exhibits', [ExhibitController::class, 'handleGetExhibits']);
+    $app->get('/exhibits/{exhibit_id}', [ExhibitController::class, 'handleGetByExhibitId']);
+    $app->get('/exhibits/{location_id}', [ExhibitController::class, 'handleGetByLocationId']);
+
+    $app->get('/exhibits/objects', [ExhibitObjectController::class, 'handleGetExhibitObjects']);
+    $app->get('/exhibits/objects/{exhibit_object_id}', [ExhibitObjectController::class, 'handleGetByExhibitObjectId']);
+    $app->get('/exhibits/{exhibit_id}/objects', [ExhibitObjectController::class, 'handleGetByExhibitId']);
+
+    //* ROUTE: POST /exhibits
+    $app->post('/exhibits', [ExhibitController::class, 'handleCreateExhibit']);
 
     $artifacts = $app->group('/artifacts', function (Slim\Routing\RouteCollectorProxy $group) {
         $group->get('', [ArtController::class, 'handleGetArtifacts']);
@@ -78,4 +88,15 @@ return static function (Slim\App $app): void {
         $response->getBody()->write($info);
         return $response->withHeader('Content-Type', 'text/html');
     });
+
+    //* ROUTE:POST /cultures
+    $app->post("/cultures", [CultureController::class, "handleCreateCultures"]);
+
+    //* ROUTE: GET /cultures/{culture_id}/
+    $app->get('/cultures', [CultureController::class, 'handleGetCultures']);
+    $app->get('/cultures/{culture_id}', [CultureController::class, 'handleGetCultureById']);
+    $app->get('/cultures/{culture_id}/anthropology', [CultureController::class, 'handleGetCultureAnthropology']);
+    $app->get('/cultures/{culture_id}/timeline', [CultureController::class, 'handleGetCultureTimeline']);
+
+
 };
