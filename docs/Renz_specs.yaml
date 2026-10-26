@@ -1,0 +1,35 @@
+openapi: 3.1.0
+info:
+  title: Artist API
+  description: API for managing artists and their artworks.
+  version: 1.0.0
+servers:
+  - url: https://api.server.test/v1
+paths:
+  /artists:
+    get:
+      summary: Get a list of artists
+      responses:
+        "200":
+          description: OK
+  /artists/{artistId}:
+    get:
+      summary: Get details of a specific artist
+      parameters:
+        - name: artistId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: OK
+        "400":
+          description: Invalid artist ID
+        "404":
+          description: Artist not found
+  /test:
+    get:
+      responses:
+        "200":
+          description: OK

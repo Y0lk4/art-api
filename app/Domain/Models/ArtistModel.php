@@ -4,6 +4,12 @@ namespace App\Domain\Models;
 
 class ArtistModel extends BaseModel
 {
+    /**
+     * Gets artists using filters and sorting.
+     *
+     * @param array $filters Filters to apply.
+     * @return mixed List of artists.
+     */
     public function getArtists(array $filters)
     {
         $filter_values = [];
@@ -77,12 +83,24 @@ class ArtistModel extends BaseModel
         return $artists;
     }
 
+    /**
+     * Gets an artist by ID.
+     *
+     * @param int $id Artist ID.
+     * @return array|false Artist data or false.
+     */
     public function getArtistById(int $id): array | false
     {
         $sql = "SELECT * FROM artist WHERE artist_id = :artist_id";
         return $this->fetchSingle($sql, [':artist_id' => $id]);
     }
 
+    /**
+     * Adds a new artist.
+     *
+     * @param array $artist Artist data.
+     * @return void
+     */
     public function createArtist(array $artist)
     {
         $this->insert('artist', $artist);

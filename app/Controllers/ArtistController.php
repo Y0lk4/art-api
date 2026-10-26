@@ -13,11 +13,24 @@ use App\Helpers\Validator;
 
 class ArtistController extends BaseController 
 {
+    /**
+     * Initializes the controller.
+     *
+     * @param ArtistModel $artist_model Artist model.
+     * @param ArtistService $artist_service Artist service.
+     */
     public function __construct(
         private ArtistModel $artist_model,
         private ArtistService $artist_service,
     ) {}
 
+    /**
+     * Gets all artists.
+     *
+     * @param Request $request HTTP request.
+     * @param Response $response HTTP response.
+     * @return Response JSON response.
+     */
     public function handleGetArtists(Request $request, Response $response): Response
     {
         $filters = $request->getQueryParams();
@@ -26,6 +39,14 @@ class ArtistController extends BaseController
         return $this->renderJson($response, $artists);
     }
 
+    /**
+     * Gets an artist by ID.
+     *
+     * @param Request $request HTTP request.
+     * @param Response $response HTTP response.
+     * @param array $args Route parameters.
+     * @return Response JSON response.
+     */
     public function handleGetArtistById(Request $request, Response $response, array $args): Response
     {
         $artist_id = $args["artist_id"];
@@ -42,6 +63,13 @@ class ArtistController extends BaseController
         return $this->renderJson($response, $artist, 200);
     }
 
+    /**
+     * creates a new artist.
+     *
+     * @param Request $request HTTP request.
+     * @param Response $response HTTP response.
+     * @return Response JSON response.
+     */
     public function handleCreateArtist(Request $request, Response $response): Response
     {
         $payload = $request->getParsedBody();
