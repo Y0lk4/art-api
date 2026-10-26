@@ -38,34 +38,6 @@ class ExhibitsService extends BaseService
 
         return $exhibit;
     }
-
-    public function enrichExhibitWithCountryDate(array $exhibit): array
-    {
-        $countryCode = $exhibit['country_code'] ?? 'CA';
-
-        $url = "https://api.restcountries.com/countries/v5/codes.gec/" . $countryCode;
-        $apiKey = $_ENV['REST_COUNTRIES_API_KEY'] ?? "YOUR_REST_COUNTRIES_API_KEY";
-
-        $ch = curl_init($url);
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, true);
-        curl_setopt($ch, CURLOPT_HTTPHEADER, [
-        "Authorization: Bearer {$apiKey}",
-        "Accept: application/json"
-        ]);
-
-        $response = curl_exec($ch);
-        $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-        curl_close($ch);
-
-        if($httpCode === 200 && $response){
-            $countryCode = json_decode($response, true);
-            $exhibit['currency'] = $countryData['currencies'] ?? [];
-            $exhibit['timezones'] = $countryData['timezones'] ?? [];
-        }
-
-        return $exhibit;
-    }
     /**
      * validates and inserts exhibits into the database
      *
