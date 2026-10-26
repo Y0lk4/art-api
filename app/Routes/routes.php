@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use App\Controllers\AboutController;
 use App\Controllers\ExhibitController;
+use App\Domain\Services\ExhibitsService;
 use App\Helpers\DateTimeHelper;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
@@ -15,6 +16,9 @@ return static function (Slim\App $app): void {
 
     //* ROUTE: GET /
     $app->get('/', [AboutController::class, 'handleAboutWebService']);
+    $app->get('/exhibits', [ExhibitController::class, 'handleGetExhibits']);
+    $app->get('/exhibits/{exhibit_id}', [ExhibitController::class, 'handleGetByExhibitId']);
+    $app->get('/exhibits/{location_id', [ExhibitController::class, 'handleGetByLocationId']);
 
     //* ROUTE: POST /exhibits
     $app->post('/exhibits', [ExhibitController::class, 'handleCreateExhibit']);
