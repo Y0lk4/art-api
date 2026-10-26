@@ -20,6 +20,28 @@ class ExhibitModel extends BaseModel
         $views_min = $filters['views_min'] ?? '';
         $views_max = $filters['views_max'] ?? '';
 
+        $sortBy = $filters['sort'] ?? 'exhibit_id';
+        $order = $filters['order'] ?? 'ASC';
+
+        $validOrders = ['asc','desc'];
+        $order = strtoupper($order);
+
+        $sortValues = [
+            'exhibit_id' => 'exhibit_id',
+            'location_id' => 'location_id',
+            'visibility' => 'visibility',
+            'created_at' => 'created_at',
+            'view_count' => 'view_count',
+            'name' => 'name'
+        ];
+
+        if (!array_key_exists($sortBy, $sortValues)) {
+            throw new \InvalidArgumentException("Invalid sort field: {$sortBy}");
+        }
+
+        if (!in_array(strtolower($order), $validOrders)) {
+            throw new \InvalidArgumentException("Invalid sort order: {$order}");
+        }
 
         if (!empty($exhibit_name)) {
             $sql .= " AND name LIKE CONCAT('%', :name, '%')";
@@ -53,6 +75,9 @@ class ExhibitModel extends BaseModel
 
         $this->setPaginationOptions((int) ($filters["page"] ?? 1), (int) ($filters["page_size"] ?? 10));
 
+
+        $sql .= " ORDER BY {$sortValues[$sortBy]} {$order}";
+
         $exhibits = $this->paginate($sql, $filter_values);
 
 
@@ -64,6 +89,8 @@ class ExhibitModel extends BaseModel
         // either use ? or named placeholders, named placeholders are preferred cuz its clearer
         $sql = 'SELECT * FROM exhibits WHERE exhibit_id = :exhibit_id';
 
+        
+
         //fetchSingle returns mixed, mixed returns an array of boolean
         return $this->fetchSingle(
             $sql,
@@ -73,18 +100,40 @@ class ExhibitModel extends BaseModel
         );
     }
 
-    public function getExhibitByLocationId(int $id): array | false
+    public function getExhibitsByLocationId(int $id, array $filters): array | false
     {
         // either use ? or named placeholders, named placeholders are preferred cuz its clearer
         $sql = 'SELECT * FROM exhibits WHERE location_id = :location_id';
 
+        $sortBy = $filters['sort'] ?? 'exhibit_id';
+        $order = $filters['order'] ?? 'ASC';
+
+        $validOrders = ['asc','desc'];
+        $order = strtoupper($order);
+
+        $sortValues = [
+            'exhibit_id' => 'exhibit_id',
+            'location_id' => 'location_id',
+            'visibility' => 'visibility',
+            'created_at' => 'created_at',
+            'view_count' => 'view_count',
+            'name' => 'name'
+        ];
+
+        if (!array_key_exists($sortBy, $sortValues)) {
+            throw new \InvalidArgumentException("Invalid sort field: {$sortBy}");
+        }
+
+        if (!in_array(strtolower($order), $validOrders)) {
+            throw new \InvalidArgumentException("Invalid sort order: {$order}");
+        }
+
         //fetchSingle returns mixed, mixed returns an array of boolean
-        return $this->fetchSingle(
-            $sql,
-            [
-                "location_id" => $id
-            ]
-        );
+        $this->setPaginationOptions((int) ($filters["page"] ?? 1), (int) ($filters["page_size"] ?? 10));
+
+        $sql .= " ORDER BY {$sortValues[$sortBy]} {$order}";
+
+        return $this->paginate($sql);
     }
 
     public function createExhibit(array $exhibit)

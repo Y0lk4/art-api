@@ -49,6 +49,7 @@ class ExhibitController extends BaseController
 
     public function handleGetByLocationId(Request $request, Response $response, $args) : Response
     {
+        $filters = $request->getQueryParams();
         $location_id = $args['location_id'];
 
         $pattern = "/^\d{1,9}$/";
@@ -60,7 +61,7 @@ class ExhibitController extends BaseController
             );
             }
 
-        $exhibit = $this->exhibit_model->getExhibitByLocationId($location_id);
+        $exhibit = $this->exhibit_model->getExhibitsByLocationId($location_id, $filters);
         if (empty($exhibit) || !is_array($exhibit) && $exhibit === false){
             throw new HttpNotFoundException($request, "No exhibit found withe the location ID: " . $location_id);
         }
