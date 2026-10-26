@@ -9,7 +9,7 @@ class ExhibitObjectModel extends BaseModel
 
         $filter_values = [];
         // Execute SQL Query to read the list of vendors.
-        $sql = "SELECT * from exhibit WHERE 1";
+        $sql = "SELECT * from exhibits WHERE 1";
 
         $exhibit_id = $filters["exhibit_id"] ?? '';
         $object_id = $filters["object_id"] ?? '';
