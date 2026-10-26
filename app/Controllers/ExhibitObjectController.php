@@ -2,6 +2,7 @@
 
 namespace App\Controllers;
 
+use App\Helpers\Validator;
 use App\Domain\Services\ExhibitsService;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
@@ -19,30 +20,52 @@ class ExhibitObjectController extends BaseController
     {
         $filters = $request->getQueryParams();
 
-        $exhibits = $this->exhibit_object_model->getExhibitObjects($filters);
+        if (isset($filters['exhibit_id']) && !Validator::isPositiveInt($filters['exhibit_id'])) {
+            throw new HttpBadRequestException($request, "exhibit_id must be a positive integer.");
+        }
 
-        return $this->renderJson($response, $exhibits, 200);
+        if (isset($filters['object_id']) && !Validator::isPositiveInt($filters['object_id'])) {
+            throw new HttpBadRequestException($request, "object_id must be a positive integer.");
+        }
+
+        if (isset($filters['is_featured']) && !Validator::isBoolean($filters['is_featured'])) {
+            throw new HttpBadRequestException($request, "is_featured must be a boolean value (true/false, 1/0).");
+        }
+
+        if (isset($filters['added_after']) && !Validator::isIsoDate($filters['added_after'])) {
+            throw new HttpBadRequestException($request, "added_after must be a valid ISO 8601 date-time.");
+        }
+
+        if (isset($filters['page']) && !Validator::isPositiveInt($filters['page'])) {
+            throw new HttpBadRequestException($request, "page must be a positive integer.");
+        }
+
+        if (isset($filters['page_size']) && !Validator::isPositiveInt($filters['page_size'])) {
+            throw new HttpBadRequestException($request, "page_size must be a positive integer.");
+        }
+
+        $exhibit_object = $this->exhibit_object_model->getExhibitObjects($filters);
+
+        return $this->renderJson($response, $exhibit_object, 200);
     }   
 
     public function handleGetByExhibitObjectId(Request $request, Response $response, $args) : Response
     {
-        $exhibit_id = $args['exhibit_object_id'];
+        $exhibit_object_id = $args['exhibit_object_id'];
 
-        $pattern = "/^\d{1,9}$/";
-        if (preg_match($pattern, $exhibit_id) === 0){
-
+        if (!Validator::isPositiveInt($exhibit_object_id)) {
             throw new HttpBadRequestException(
                 $request,
-                "The exhibit object id does not exist"
+                "The exhibit object ID must be a positive integer."
             );
-            }
-
-        $exhibit = $this->exhibit_object_model->getExhibitObjectById($exhibit_id);
-        if (empty($exhibit) || !is_array($exhibit) && $exhibit === false){
-            throw new HttpNotFoundException($request, "No exhibit object found for the ID: " . $exhibit_id);
         }
 
-        return $this->renderJson($response, $exhibit, 200);
+        $exhibit_object = $this->exhibit_object_model->getExhibitObjectById($exhibit_object_id);
+        if (empty($exhibit) || !is_array($exhibit) && $exhibit === false){
+            throw new HttpNotFoundException($request, "No exhibit object found for the ID: " . $exhibit_object_id);
+        }
+
+        return $this->renderJson($response, $exhibit_object, 200);
     }
 
     public function handleGetByExhibitId(Request $request, Response $response, $args) : Response
@@ -50,17 +73,15 @@ class ExhibitObjectController extends BaseController
         $filters = $request->getQueryParams();
         $exhibit_id = $args['exhibit_id'];
 
-        $pattern = "/^\d{1,9}$/";
-        if (preg_match($pattern, $exhibit_id) === 0){
-
+        if (!Validator::isPositiveInt($exhibit_id)) {
             throw new HttpBadRequestException(
                 $request,
-                "The exhibit id does not exist"
+                "The exhibit ID must be a positive integer."
             );
-            }
+        }
 
         $exhibit_object = $this->exhibit_object_model->getExhibitObjectsByExhibitId($exhibit_id, $filters);
-        if (empty($exhibit) || !is_array($exhibit) && $exhibit === false){
+        if (empty($exhibit_object) || ($exhibit_object === false)) {
             throw new HttpNotFoundException($request, "No exhibit objects found with the exhibit ID: " . $exhibit_id);
         }
 

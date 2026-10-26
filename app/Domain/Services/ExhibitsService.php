@@ -31,14 +31,13 @@ class ExhibitsService extends BaseService
         curl_close($ch);
 
         if($httpCode === 200 && $response){
-            $countryCode = json_decode($response, true);
+            $countryData = json_decode($response, true);
             $exhibit['currency'] = $countryData['currencies'] ?? [];
             $exhibit['timezones'] = $countryData['timezones'] ?? [];
         }
 
         return $exhibit;
     }
-
     /**
      * validates and inserts exhibits into the database
      *
