@@ -3,7 +3,9 @@
 declare(strict_types=1);
 
 use App\Controllers\AboutController;
+use App\Controllers\ArtController;
 use App\Helpers\DateTimeHelper;
+use App\Middleware\ArtifactAcceptMiddleware;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
 
@@ -14,6 +16,25 @@ return static function (Slim\App $app): void {
 
     //* ROUTE: GET /
     $app->get('/', [AboutController::class, 'handleAboutWebService']);
+
+    $artifacts = $app->group('/artifacts', function (Slim\Routing\RouteCollectorProxy $group) {
+        $group->get('', [ArtController::class, 'handleGetArtifacts']);
+        $group->get('/{artifact_id}', [ArtController::class, 'handleGetArtifactById']);
+    });
+    $artifacts->add(ArtifactAcceptMiddleware::class);
+    $artifact_errors = new Slim\Middleware\ErrorMiddleware(
+        $app->getCallableResolver(), $app->getResponseFactory(), false, true, true
+    );
+    $artifact_error_handler = $artifact_errors->getDefaultErrorHandler();
+    $artifact_error_handler->forceContentType('application/json');
+    $artifact_error_handler->registerErrorRenderer('application/json', function (\Throwable $exception, bool $display_error_details): string {
+        $code = $exception instanceof Slim\Exception\HttpException ? $exception->getCode() : 500;
+        return json_encode([
+            'code' => $code,
+            'message' => $code === 500 ? 'Internal server error.' : $exception->getMessage()
+        ], JSON_UNESCAPED_SLASHES | JSON_INVALID_UTF8_SUBSTITUTE);
+    });
+    $artifacts->add($artifact_errors);
 
     //* NOTE: callback naming pattern: handle<ActionName>, e.g. handleGetPlayers
     //* ROUTE: GET /players

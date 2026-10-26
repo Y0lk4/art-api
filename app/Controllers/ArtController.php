@@ -1,57 +1,51 @@
 <?php
-//* GET /keyboards (web resource)
-//* Return the list of ALL vendors stored in the DB
-//TODO: Implement a callback method
 
-public function handleCreateArt(
+declare(strict_types=1);
 
-        request $request,
-        Response $response
-): Response {
+namespace App\Controllers;
 
+use App\Domain\Services\ArtifactsService;
+use Psr\Http\Message\ResponseInterface as Response;
+use Psr\Http\Message\ServerRequestInterface as Request;
+use Slim\Exception\HttpBadRequestException;
+use Slim\Exception\HttpNotFoundException;
 
-//*1) Get/retrieve the representation of the collection to be created.
-//TODO: Check the NULL edge case
-$payload = $request->getParsedBody();
-json_decode()
+class ArtController extends BaseController
+{
+    public function __construct(private ArtifactsService $artifacts_service) {}
 
-//dd($payload);
-//*2 Pass the new items to be created to the service so that they can be validated and inserted into database
-$result= $this->vendors_services->doCreateVendors($payload);
+    public function handleGetArtifacts(Request $request, Response $response): Response
+    {
+        try {
+            $artifacts = $this->artifacts_service->getArtifacts($request->getQueryParams());
+        } catch (\InvalidArgumentException $exception) {
+            throw new HttpBadRequestException($request, $exception->getMessage(), $exception);
+        }
 
-if($result->isSuccess()) {
+        return $this->renderJson($response, $artifacts);
+    }
 
-//TODO: prepare AND return a JSON error response.
+    public function handleGetArtifactById(Request $request, Response $response, array $args): Response
+    {
+        try {
+            $artifact = $this->artifacts_service->getArtifactById($args['artifact_id'], $request->getQueryParams());
+        } catch (\InvalidArgumentException $exception) {
+            throw new HttpBadRequestException($request, $exception->getMessage(), $exception);
+        }
 
+        if ($artifact === false) {
+            throw new HttpNotFoundException($request, 'Artifact not found.');
+        }
+
+        return $this->renderJson($response, $artifact);
+    }
+
+    public function handleCreateArt(Request $request, Response $response): Response
+    {
+        //TODO: prepare AND return a JSON success response.
+        return $this->renderJson($response, [
+            'code' => 500,
+            'message' => 'Artifact creation is not implemented.'
+        ], 500);
+    }
 }
-//TODO: prepare AND return a JSON success response.
-//echo "Kawkalaken!";
-return $response;
-
-
-
-}
-
-$data = [
-
-            "code" => 400,
-            "message" => "Hanson list of vendors were created avec success!",
-];
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
