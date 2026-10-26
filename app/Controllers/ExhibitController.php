@@ -2,6 +2,7 @@
 
 namespace App\Controllers;
 
+use App\Helpers\Validator;
 use App\Domain\Services\ExhibitsService;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
@@ -19,6 +20,35 @@ class ExhibitController extends BaseController
     {
         $filters = $request->getQueryParams();
 
+
+        if (isset($params['visibility']) && !Validator::isInArray($filters['visibility'], ['public', 'private'])) {
+            throw new HttpBadRequestException($request, "Invalid visibility filter. Allowed: public, private.");
+        }
+
+        if (isset($params['location_id']) && !Validator::isPositiveInt($filters['location_id'])) {
+            throw new HttpBadRequestException($request, "location_id must be a positive integer.");
+        }
+
+        if (isset($params['views_min']) && !Validator::isPositiveInt($filters['views_min'])) {
+            throw new HttpBadRequestException($request, "views_min must be a positive integer.");
+        }
+
+        if (isset($params['views_max']) && !Validator::isPositiveInt($filters['views_max'])) {
+            throw new HttpBadRequestException($request, "views_max must be a positive integer.");
+        }
+
+        if (isset($params['created_after']) && !Validator::isIsoDate($filters['created_after'])) {
+            throw new HttpBadRequestException($request, "created_after must be a valid ISO 8601 date-time.");
+        }
+
+        if (isset($params['page']) && !Validator::isPositiveInt($filters['page'])) {
+            throw new HttpBadRequestException($request, "page must be a positive integer.");
+        }
+
+        if (isset($params['page_size']) && !Validator::isPositiveInt($filters['page_size'])) {
+            throw new HttpBadRequestException($request, "page_size must be a positive integer.");
+        } 
+        
         $exhibits = $this->exhibit_model->getExhibits($filters);
 
         return $this->renderJson($response, $exhibits, 200);
@@ -28,17 +58,15 @@ class ExhibitController extends BaseController
     {
         $exhibit_id = $args['exhibit_id'];
 
-        $pattern = "/^\d{1,9}$/";
-        if (preg_match($pattern, $exhibit_id) === 0){
-
+        if (!Validator::isPositiveInt($exhibit_id)) {
             throw new HttpBadRequestException(
                 $request,
-                "The exhibit id does not exist"
+                "The exhibit ID must be a positive integer."
             );
-            }
+        }
 
         $exhibit = $this->exhibit_model->getExhibitById($exhibit_id);
-        if (empty($exhibit) || !is_array($exhibit) && $exhibit === false){
+        if (empty($exhibit) || ($exhibit === false)) {
             throw new HttpNotFoundException($request, "No exhibit found for the ID: " . $exhibit_id);
         }
 
@@ -50,18 +78,16 @@ class ExhibitController extends BaseController
         $filters = $request->getQueryParams();
         $location_id = $args['location_id'];
 
-        $pattern = "/^\d{1,9}$/";
-        if (preg_match($pattern, $location_id) === 0){
-
+        if (!Validator::isPositiveInt($location_id)) {
             throw new HttpBadRequestException(
                 $request,
-                "The location id does not exist"
+                "The location ID must be a positive integer."
             );
-            }
+        }
 
         $exhibit = $this->exhibit_model->getExhibitsByLocationId($location_id, $filters);
-        if (empty($exhibit) || !is_array($exhibit) && $exhibit === false){
-            throw new HttpNotFoundException($request, "No exhibit found withe the location ID: " . $location_id);
+        if (empty($exhibits) || ($exhibits === false)) {
+            throw new HttpNotFoundException($request, "No exhibit found with the location ID: " . $location_id);
         }
 
         return $this->renderJson($response, $exhibit, 200);
