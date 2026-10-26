@@ -5,6 +5,7 @@ declare(strict_types=1);
 use App\Controllers\AboutController;
 use App\Controllers\ExhibitController;
 use App\Domain\Services\ExhibitsService;
+use App\Controllers\CultureController;
 use App\Helpers\DateTimeHelper;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
@@ -52,4 +53,15 @@ return static function (Slim\App $app): void {
         $response->getBody()->write($info);
         return $response->withHeader('Content-Type', 'text/html');
     });
+
+    //* ROUTE:POST /cultures
+    $app->post("/cultures", [CultureController::class, "handleCreateCultures"]);
+
+    //* ROUTE: GET /cultures/{culture_id}/
+    $app->get('/cultures', [CultureController::class, 'handleGetCultures']);
+    $app->get('/cultures/{culture_id}', [CultureController::class, 'handleGetCultureById']);
+    $app->get('/cultures/{culture_id}/anthropology', [CultureController::class, 'handleGetCultureAnthropology']);
+    $app->get('/cultures/{culture_id}/timeline', [CultureController::class, 'handleGetCultureTimeline']);
+
+
 };
