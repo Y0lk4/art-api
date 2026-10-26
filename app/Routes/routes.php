@@ -3,11 +3,15 @@
 declare(strict_types=1);
 
 use App\Controllers\AboutController;
-use App\Controllers\ArtController;
+use App\Domain\Services\ExhibitsService;
+use App\Controllers\ExhibitController;
+use App\Controllers\CultureController;
 use App\Helpers\DateTimeHelper;
-use App\Middleware\ArtifactAcceptMiddleware;
+use App\Controllers\ExhibitObjectController;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
+use App\Controllers\ArtController;
+use App\Middleware\ArtifactAcceptMiddleware;
 
 
 return static function (Slim\App $app): void {
