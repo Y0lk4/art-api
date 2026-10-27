@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "3dc6324b7aa2ee97ebba3f05db1c2102",
+    "content-hash": "a5c8bf773488c33e509f59579dd9c70c",
     "packages": [
         {
             "name": "fig/http-message-util",
@@ -135,6 +135,67 @@
                 "source": "https://github.com/googleapis/php-jwt/tree/v7.2.1"
             },
             "time": "2026-09-28T17:51:46+00:00"
+        },
+        {
+            "name": "frostybee/valicomb",
+            "version": "v1.3.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/frostybee/valicomb.git",
+                "reference": "0f98825c2b720d1fab07cc702002dfb60717da7a"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/frostybee/valicomb/zipball/0f98825c2b720d1fab07cc702002dfb60717da7a",
+                "reference": "0f98825c2b720d1fab07cc702002dfb60717da7a",
+                "shasum": ""
+            },
+            "require": {
+                "ext-mbstring": "*",
+                "php": ">=8.2"
+            },
+            "require-dev": {
+                "friendsofphp/php-cs-fixer": "^3.64",
+                "phpstan/phpstan": "^1.10",
+                "phpunit/phpunit": "^11.5 || ^12.5 || ^13.4"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Frostybee\\Valicomb\\": "src/Valicomb"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "BSD-3-Clause"
+            ],
+            "authors": [
+                {
+                    "name": "Vance Lucas (original author)",
+                    "email": "vance@vancelucas.com",
+                    "homepage": "https://www.vancelucas.com"
+                },
+                {
+                    "name": "FrostyBee (current maintainer)",
+                    "homepage": "https://github.com/frostybee"
+                }
+            ],
+            "description": "Modern, type-safe PHP validation library for PHP 8.2+ with security-first design and zero dependencies. This is a fork of vlucas/valitron.",
+            "homepage": "https://github.com/frostybee/valicomb",
+            "keywords": [
+                "php8",
+                "security",
+                "type-safe",
+                "valicomb",
+                "valid",
+                "validation",
+                "validator"
+            ],
+            "support": {
+                "issues": "https://github.com/frostybee/valicomb/issues",
+                "source": "https://github.com/frostybee/valicomb/tree/v1.3.0"
+            },
+            "time": "2026-10-27T05:36:36+00:00"
         },
         {
             "name": "guzzlehttp/guzzle",
