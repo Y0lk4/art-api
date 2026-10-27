@@ -1,0 +1,454 @@
+openapi: 3.0.3
+
+info:
+  title: Antique - Artifacts API
+  description: >-
+    Intended GET contract for the museum artifacts collection from the Antique
+    Project Proposal. GET handlers are implemented on F-BRANCH; live database
+    reads require a configured artifact database. SQL fields and examples follow
+    arts-artifacts.sql on Jonathan's branch. Responses use JSON arrays, numeric
+    and boolean conversion, and RFC 3339 timestamps. Requests accept application/json,
+    application/*, */*, or no Accept header. An incompatible Accept header returns 406.
+  version: 1.0.0
+
+servers:
+  - url: http://localhost:8080/art-api
+    description: Current Wampoon base path. Change the port to match the local server.
+  - url: http://localhost:8080
+    description: Deployment with APP_ROOT_DIR set to an empty string.
+
+tags:
+  - name: Artifacts
+    description: Museum artifacts
+
+x-team-confirmation:
+  - The public artifact_id path parameter maps to artifact.object_id.
+  - JSON retains object_id; confirm whether the public JSON ID should be artifact_id.
+  - Review implemented substring title matching, AND filters, and exact start_year matching.
+  - Review title ascending default, object_id tie breaking, and database null ordering.
+  - Review page 1, limit 10, maximum limit 100, and explicit offset overriding page.
+  - Confirm database session timezone matches the PHP timezone used to format timestamps.
+  - Shared content negotiation and error formats still need agreement across resource branches.
+
+paths:
+  /artifacts:
+    get:
+      tags:
+        - Artifacts
+      summary: List artifacts
+      description: >-
+        Retrieve artifacts with the five optional filters, sorting and pagination.
+        Filters are combined with AND. start_year and ID filters match exactly;
+        title uses a case-insensitive literal substring. Database collation can
+        also affect title matching. Empty or out-of-range pages return 200 with
+        an empty array. Defaults are sort=title, page=1, and limit=10. Explicit
+        offset overrides page; otherwise offset is (page - 1) * limit. Unknown
+        query parameters and array values return 400. These implementation
+        defaults remain subject to team review.
+      x-implementation-status: implemented-database-verification-blocked
+      operationId: getArtifacts
+
+      parameters:
+        - name: title
+          in: query
+          description: Filter by artifact title.
+          schema:
+            type: string
+            minLength: 1
+            maxLength: 255
+          example: Hatshepsut
+
+        - name: department_id
+          in: query
+          description: Filter by department ID.
+          schema:
+            type: integer
+            format: int32
+            minimum: 1
+            maximum: 2147483647
+          example: 1
+
+        - name: culture_id
+          in: query
+          description: Filter by culture ID.
+          schema:
+            type: integer
+            format: int32
+            minimum: 1
+            maximum: 2147483647
+          example: 1
+
+        - name: start_year
+          in: query
+          description: Filter by the artifact's starting year.
+          schema:
+            type: integer
+            format: int32
+            minimum: -2147483648
+            maximum: 2147483647
+          example: -1473
+
+        - name: is_public_domain
+          in: query
+          description: Filter artifacts by public domain status. Only true and false are accepted.
+          schema:
+            type: boolean
+          example: true
+
+        - $ref: "#/components/parameters/Sort"
+        - $ref: "#/components/parameters/Page"
+        - $ref: "#/components/parameters/Limit"
+        - $ref: "#/components/parameters/Offset"
+
+      responses:
+        "200":
+          description: Artifacts retrieved successfully.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Artifact"
+              example:
+                - object_id: 1
+                  title: Statue of Hatshepsut
+                  object_name: Statue
+                  department_id: 1
+                  culture_id: 1
+                  period_id: 1
+                  medium_id: 1
+                  object_date: ca. 1473–1458 B.C.
+                  start_year: -1473
+                  end_year: -1458
+                  height_cm: 245.0
+                  width_cm: 80.0
+                  credit_line: Museum Excavation, 1925
+                  is_highlight: true
+                  is_public_domain: true
+                  acquisition_date: "1926-01-15"
+                  rights_and_reproduction: public_domain
+
+        "400":
+          $ref: "#/components/responses/BadRequest"
+
+        "406":
+          $ref: "#/components/responses/NotAcceptable"
+
+        "500":
+          $ref: "#/components/responses/ServerError"
+
+  /artifacts/{artifact_id}:
+    get:
+      tags:
+        - Artifacts
+      summary: Get an artifact by ID
+      description: >-
+        Retrieve an artifact using public artifact_id to look up artifact.object_id
+        in the database. Return 404 when a valid ID has no matching record.
+        JSON retains object_id pending team confirmation of the public ID name.
+        Query parameters are not supported on this operation and return 400.
+      x-implementation-status: implemented-database-verification-blocked
+      operationId: getArtifactById
+
+      parameters:
+        - name: artifact_id
+          in: path
+          required: true
+          description: Artifact ID corresponding to object_id in the database.
+          schema:
+            type: integer
+            format: int32
+            minimum: 1
+            maximum: 2147483647
+          example: 1
+
+      responses:
+        "200":
+          description: Artifact found.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Artifact"
+              example:
+                object_id: 1
+                title: Statue of Hatshepsut
+                object_name: Statue
+                department_id: 1
+                culture_id: 1
+                period_id: 1
+                medium_id: 1
+                object_date: ca. 1473–1458 B.C.
+                start_year: -1473
+                end_year: -1458
+                height_cm: 245.0
+                width_cm: 80.0
+                credit_line: Museum Excavation, 1925
+                is_highlight: true
+                is_public_domain: true
+                acquisition_date: "1926-01-15"
+                rights_and_reproduction: public_domain
+
+        "400":
+          $ref: "#/components/responses/BadRequest"
+
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+        "406":
+          $ref: "#/components/responses/NotAcceptable"
+
+        "500":
+          $ref: "#/components/responses/ServerError"
+
+components:
+  parameters:
+    Sort:
+      name: sort
+      in: query
+      description: >-
+        Sort field. Ascending order is the default direction. Add a leading minus
+        sign for descending order, such as -title. Default field is title;
+        ties use object_id ascending. These defaults remain subject to team review.
+      schema:
+        type: string
+        enum:
+          - title
+          - "-title"
+          - start_year
+          - "-start_year"
+          - end_year
+          - "-end_year"
+          - acquisition_date
+          - "-acquisition_date"
+          - created_at
+          - "-created_at"
+        default: title
+      example: title
+
+    Page:
+      name: page
+      in: query
+      description: Page number starting at 1. Defaults to 1. Explicit offset takes precedence.
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 2147483647
+        default: 1
+      example: 1
+
+    Limit:
+      name: limit
+      in: query
+      description: Number of artifacts per page. Default 10, maximum 100.
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 100
+        default: 10
+      example: 10
+
+    Offset:
+      name: offset
+      in: query
+      description: >-
+        Number of artifacts to skip. Overrides page when supplied. Otherwise
+        computed as (page - 1) * limit, which must not exceed 2147483647.
+      schema:
+        type: integer
+        minimum: 0
+        maximum: 2147483647
+      example: 0
+
+  schemas:
+    Artifact:
+      type: object
+      description: >-
+        Artifact table columns. object_id is the database primary key matched by
+        public artifact_id. SQL BOOLEAN and DECIMAL values are JSON booleans and
+        numbers. All selected columns are returned; nullable values stay null.
+        Generated timestamps are omitted from seed examples because their actual
+        values are unknown. Timestamp timezone uses the PHP application timezone;
+        it must agree with the database session timezone.
+      required:
+        - object_id
+        - title
+      properties:
+        object_id:
+          type: integer
+          format: int32
+          example: 1
+
+        title:
+          type: string
+          maxLength: 255
+          example: Statue of Hatshepsut
+
+        object_name:
+          type: string
+          maxLength: 100
+          nullable: true
+          example: Statue
+
+        department_id:
+          type: integer
+          format: int32
+          nullable: true
+          example: 1
+
+        culture_id:
+          type: integer
+          format: int32
+          nullable: true
+          example: 1
+
+        period_id:
+          type: integer
+          format: int32
+          nullable: true
+          example: 1
+
+        medium_id:
+          type: integer
+          format: int32
+          nullable: true
+          example: 1
+
+        object_date:
+          type: string
+          maxLength: 50
+          nullable: true
+          example: ca. 1473–1458 B.C.
+
+        start_year:
+          type: integer
+          format: int32
+          nullable: true
+          example: -1473
+
+        end_year:
+          type: integer
+          format: int32
+          nullable: true
+          example: -1458
+
+        height_cm:
+          type: number
+          description: SQL DECIMAL(8,2), in centimeters.
+          minimum: -999999.99
+          maximum: 999999.99
+          nullable: true
+          example: 245.0
+
+        width_cm:
+          type: number
+          description: SQL DECIMAL(8,2), in centimeters.
+          minimum: -999999.99
+          maximum: 999999.99
+          nullable: true
+          example: 80.0
+
+        credit_line:
+          type: string
+          maxLength: 255
+          nullable: true
+          example: Museum Excavation, 1925
+
+        is_highlight:
+          type: boolean
+          nullable: true
+          example: true
+
+        is_public_domain:
+          type: boolean
+          nullable: true
+          example: true
+
+        acquisition_date:
+          type: string
+          format: date
+          nullable: true
+          example: "1926-01-15"
+
+        rights_and_reproduction:
+          type: string
+          nullable: true
+          enum:
+            - public_domain
+            - restricted
+            - unknown
+            - null
+          example: public_domain
+
+        created_at:
+          type: string
+          format: date-time
+          nullable: true
+
+        updated_at:
+          type: string
+          format: date-time
+          nullable: true
+
+    Error:
+      type: object
+      description: Artifact JSON error body. code matches the HTTP status.
+      required:
+        - code
+        - message
+      properties:
+        code:
+          type: integer
+          enum:
+            - 400
+            - 404
+            - 406
+            - 500
+          example: 400
+        message:
+          type: string
+          example: Invalid query parameter.
+
+  responses:
+    BadRequest:
+      description: >-
+        Invalid artifact_id, filter value, sort value, or pagination parameter.
+        For example, a non-integer ID, invalid boolean, unsupported sort field,
+        page or limit below 1, limit above 100, offset below 0, or unknown query
+        parameters. Malformed Accept quality values also return 400.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+          example:
+            code: 400
+            message: page must be an integer between 1 and 2147483647.
+
+    NotFound:
+      description: Artifact not found.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+          example:
+            code: 404
+            message: Artifact not found.
+
+    NotAcceptable:
+      description: The Accept header excludes application/json and compatible wildcards.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+          example:
+            code: 406
+            message: Only application/json responses are available.
+
+    ServerError:
+      description: Unexpected server error.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+          example:
+            code: 500
+            message: Internal server error.

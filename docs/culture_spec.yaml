@@ -1,0 +1,335 @@
+openapi: 3.0.3
+
+info:
+  title: Art & Artifacts API - Culture Resource
+  description: >
+    Read-only documentation for the culture resource of the Art & Artifacts
+    web service. Cultures group the artifacts of the collection and can be
+    browsed, filtered, sorted and paginated.
+  version: 1.0.0
+
+servers:
+  - url: http://localhost/art-api
+    description: Local development server
+
+tags:
+  - name: Cultures
+    description: Read operations on the culture resource
+
+paths:
+  /cultures:
+    get:
+      tags:
+        - Cultures
+      summary: List cultures
+      description: >
+        Returns a paginated list of cultures. Results can be filtered by name,
+        continent, region, language family and extinct status, and sorted by
+        name or by the start of the culture's time period.
+      operationId: listCultures
+      parameters:
+        - name: culture_name
+          in: query
+          description: Partial, case-insensitive match on the culture name.
+          required: false
+          schema:
+            type: string
+            example: japan
+        - name: continent
+          in: query
+          description: Only return cultures from this continent.
+          required: false
+          schema:
+            $ref: '#/components/schemas/Continent'
+        - name: region
+          in: query
+          description: Only return cultures from this region (exact match).
+          required: false
+          schema:
+            type: string
+            example: East Asia
+        - name: language_family
+          in: query
+          description: Only return cultures belonging to this language family (exact match).
+          required: false
+          schema:
+            type: string
+            example: Japonic
+        - name: is_extinct_culture
+          in: query
+          description: When true, only extinct cultures; when false, only cultures that are not extinct.
+          required: false
+          schema:
+            type: boolean
+        - name: sort
+          in: query
+          description: Field to sort by.
+          required: false
+          schema:
+            type: string
+            enum:
+              - culture_name
+              - time_period_start
+            default: culture_name
+          example: culture_name
+        - name: order
+          in: query
+          description: Sort direction (ascending or descending).
+          required: false
+          schema:
+            type: string
+            enum:
+              - asc
+              - desc
+            default: asc
+          example: asc
+        - $ref: '#/components/parameters/PageParam'
+        - $ref: '#/components/parameters/LimitParam'
+      responses:
+        '200':
+          description: A page of cultures.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CultureListResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+
+  /cultures/{culture_id}:
+    get:
+      tags:
+        - Cultures
+      summary: Get a culture by id
+      description: Returns a single culture.
+      operationId: getCultureById
+      parameters:
+        - $ref: '#/components/parameters/CultureIdParam'
+      responses:
+        '200':
+          description: The requested culture.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Culture'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /cultures/{culture_id}/artifacts:
+    get:
+      tags:
+        - Cultures
+      summary: List the artifacts of a culture
+      description: >
+        Returns a paginated list of the artifacts that belong to the given
+        culture (one culture has many artifacts).
+      operationId: listCultureArtifacts
+      parameters:
+        - $ref: '#/components/parameters/CultureIdParam'
+        - $ref: '#/components/parameters/PageParam'
+        - $ref: '#/components/parameters/LimitParam'
+      responses:
+        '200':
+          description: A page of artifacts belonging to the culture.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CultureArtifactListResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+components:
+  parameters:
+    CultureIdParam:
+      name: culture_id
+      in: path
+      description: Unique identifier of the culture.
+      required: true
+      schema:
+        type: integer
+        minimum: 1
+        example: 1
+
+    # Shared pagination parameters - to be agreed on as a team.
+    PageParam:
+      name: page
+      in: query
+      description: Page number (starts at 1).
+      required: false
+      schema:
+        type: integer
+        minimum: 1
+        default: 1
+
+    LimitParam:
+      name: limit
+      in: query
+      description: Number of items per page.
+      required: false
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 100
+        default: 20
+
+  schemas:
+    Continent:
+      type: string
+      description: Continent a culture belongs to.
+      enum:
+        - africa
+        - asia
+        - europe
+        - north_america
+        - south_america
+        - oceania
+        - antarctica
+
+    Culture:
+      type: object
+      required:
+        - culture_id
+        - culture_name
+        - is_extinct_culture
+      properties:
+        culture_id:
+          type: integer
+          example: 1
+        culture_name:
+          type: string
+          example: Japanese
+        region:
+          type: string
+          nullable: true
+          example: East Asia
+        continent:
+          allOf:
+            - $ref: '#/components/schemas/Continent'
+          nullable: true
+        language_family:
+          type: string
+          nullable: true
+          example: Japonic
+        time_period_start:
+          type: integer
+          nullable: true
+          description: Start year of the culture's time period (negative for BCE).
+          example: -300
+        time_period_end:
+          type: integer
+          nullable: true
+          description: End year of the culture's time period (negative for BCE). Null if ongoing.
+          example: null
+        description:
+          type: string
+          nullable: true
+          example: Culture of the Japanese archipelago.
+        is_extinct_culture:
+          type: boolean
+          example: false
+
+    PaginationMeta:
+      type: object
+      required:
+        - page
+        - limit
+        - total
+        - total_pages
+      properties:
+        page:
+          type: integer
+          example: 1
+        limit:
+          type: integer
+          example: 20
+        total:
+          type: integer
+          description: Total number of items matching the request.
+          example: 42
+        total_pages:
+          type: integer
+          example: 3
+
+    CultureListResponse:
+      type: object
+      required:
+        - data
+        - meta
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/Culture'
+        meta:
+          $ref: '#/components/schemas/PaginationMeta'
+
+    ArtifactSummary:
+      type: object
+      properties:
+        object_id:
+          type: integer
+          example: 436535
+        title:
+          type: string
+          example: Wheat Field with Cypresses
+        object_name:
+          type: string
+          nullable: true
+          example: Painting
+        object_date:
+          type: string
+          nullable: true
+          example: '1889'
+
+    CultureArtifactListResponse:
+      type: object
+      required:
+        - data
+        - meta
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/ArtifactSummary'
+        meta:
+          $ref: '#/components/schemas/PaginationMeta'
+
+    # May be needed to be agreed on as a team.
+    Error:
+      type: object
+      required:
+        - code
+        - type
+        - message
+        - description
+      properties:
+        code:
+          type: integer
+          example: 400
+        type:
+          type: string
+          example: InvalidArgumentException
+        message:
+          type: string
+          example: 'Invalid sort field: hacker'
+        description:
+          type: string
+          example: Bad Request
+
+  responses:
+    BadRequest:
+      description: The request is malformed or a parameter has an invalid value.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+
+    NotFound:
+      description: The requested resource does not exist.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
