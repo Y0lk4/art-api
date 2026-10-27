@@ -12,9 +12,9 @@ info:
   version: 1.0.0
 
 servers:
-  - url: http://localhost:8080/art-api
+  - url: http://localhost/art-api
     description: Current Wampoon base path. Change the port to match the local server.
-  - url: http://localhost:8080
+  - url: http://localhost
     description: Deployment with APP_ROOT_DIR set to an empty string.
 
 tags:
