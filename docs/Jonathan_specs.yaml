@@ -1,13 +1,322 @@
 openapi: 3.1.0
 info:
-  title: Artifacts API
-  description: API endpoints for managing artifacts, their culture, their artists and the exhibits they appeared in.
+  title: Art & Artifacts API
+  description: API for managing artifacts, the exhibits they're in and its location data, the artist who created them if known, and the culture associated
   version: 1.0.0
+
 servers:
-  - url: https://api.server.test/v1
+  - url: http://localhost/art-api
+    description: Local development server
+
 paths:
-  /test:
+  /exhibits:
     get:
+      summary: Retrieve a list of exhibits
+      description: Fetches exhibits with optional filtering, sorting, pagination, and location-based filters.
+      parameters:
+        - $ref: '#/components/parameters/NameQuery'
+        - $ref: '#/components/parameters/VisibilityQuery'
+        - $ref: '#/components/parameters/LocationIdQuery'
+        - name: created_after
+          in: query
+          description: Filter exhibits created after this ISO 8601 date-time
+          schema:
+            type: string
+            format: date-time
+        - name: views_min
+          in: query
+          description: Minimum view count filter
+          schema:
+            type: integer
+            minimum: 0
+        - name: views_max
+          in: query
+          description: Maximum view count filter
+          schema:
+            type: integer
+            minimum: 0
+        - $ref: '#/components/parameters/ExhibitSortQuery'
+        - $ref: '#/components/parameters/OrderQuery'
+        - $ref: '#/components/parameters/PageQuery'
+        - $ref: '#/components/parameters/PageSizeQuery'
       responses:
         '200':
-          description: OK
+          description: Successful response containing a paginated list of exhibits.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Exhibit'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+
+    post:
+      summary: Create a new exhibit
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ExhibitInput'
+      responses:
+        '201':
+          description: Exhibit created successfully.
+        '400':
+          $ref: '#/components/responses/BadRequest'
+
+  /exhibits/{exhibit_id}:
+    get:
+      summary: Get exhibit details by exhibit ID
+      description: Returns a single exhibit record matched by its ID.
+      parameters:
+        - $ref: '#/components/parameters/ExhibitIdPathParam'
+      responses:
+        '200':
+          description: Found exhibit details.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Exhibit'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /exhibits/location/{location_id}:
+    get:
+      summary: Get exhibits by location ID
+      parameters:
+        - $ref: '#/components/parameters/LocationIdPathParam'
+        - $ref: '#/components/parameters/PageQuery'
+        - $ref: '#/components/parameters/PageSizeQuery'
+      responses:
+        '200':
+          description: List of exhibits at the specified location.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Exhibit'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /exhibits/objects:
+    get:
+      summary: Retrieve a list of exhibit objects
+      parameters:
+        - name: exhibit_id
+          in: query
+          schema:
+            type: integer
+        - name: object_id
+          in: query
+          schema:
+            type: integer
+        - name: is_featured
+          in: query
+          description: Filter by featured status (boolean)
+          schema:
+            type: boolean
+        - name: tag
+          in: query
+          schema:
+            type: string
+        - name: added_after
+          in: query
+          schema:
+            type: string
+            format: date-time
+        - $ref: '#/components/parameters/ExhibitObjectSortQuery'
+        - $ref: '#/components/parameters/OrderQuery'
+        - $ref: '#/components/parameters/PageQuery'
+        - $ref: '#/components/parameters/PageSizeQuery'
+      responses:
+        '200':
+          description: Successful response returning a list of exhibit objects.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ExhibitObject'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+
+  /exhibits/objects/{exhibit_object_id}:
+    get:
+      summary: Get exhibit object by ID
+      parameters:
+        - $ref: '#/components/parameters/ExhibitObjectIdPathParam'
+      responses:
+        '200':
+          description: Successful response with exhibit object details.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ExhibitObject'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /exhibits/{exhibit_id}/objects:
+    get:
+      summary: Get exhibit objects by exhibit ID
+      parameters:
+        - $ref: '#/components/parameters/ExhibitIdPathParam'
+        - $ref: '#/components/parameters/PageQuery'
+        - $ref: '#/components/parameters/PageSizeQuery'
+      responses:
+        '200':
+          description: List of objects belonging to the exhibit.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ExhibitObject'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+components:
+  parameters:
+    PageQuery:
+      name: page
+      in: query
+      description: Page number for pagination
+      schema:
+        type: integer
+        default: 1
+    PageSizeQuery:
+      name: page_size
+      in: query
+      description: Number of items per page
+      schema:
+        type: integer
+        default: 10
+    OrderQuery:
+      name: order
+      in: query
+      description: Sort direction
+      schema:
+        type: string
+        enum: [asc, desc]
+        default: asc
+    NameQuery:
+      name: name
+      in: query
+      schema:
+        type: string
+    VisibilityQuery:
+      name: visibility
+      in: query
+      schema:
+        type: string
+        enum: [public, private]
+    LocationIdQuery:
+      name: location_id
+      in: query
+      schema:
+        type: integer
+    ExhibitIdPathParam:
+      name: exhibit_id
+      in: path
+      required: true
+      schema:
+        type: integer
+    LocationIdPathParam:
+      name: location_id
+      in: path
+      required: true
+      schema:
+        type: integer
+    ExhibitObjectIdPathParam:
+      name: exhibit_object_id
+      in: path
+      required: true
+      schema:
+        type: integer
+    ExhibitSortQuery:
+      name: sort
+      in: query
+      schema:
+        type: string
+        enum: [exhibit_id, location_id, visibility, created_at, view_count, name]
+        default: exhibit_id
+    ExhibitObjectSortQuery:
+      name: sort
+      in: query
+      schema:
+        type: string
+        enum: [exhibit_object_id, exhibit_id, object_id, display_order, added_at, updated_at]
+        default: exhibit_object_id
+
+  schemas:
+    Exhibit:
+      type: object
+      properties:
+        exhibit_id:
+          type: integer
+        user_id:
+          type: integer
+        location_id:
+          type: integer
+        exhibit_name:
+          type: string
+        description:
+          type: string
+        visibility:
+          type: string
+          enum: [public, private]
+        created_at:
+          type: string
+          format: date-time
+
+    ExhibitInput:
+      type: object
+      required:
+        - user_id
+        - location_id
+        - exhibit_name
+      properties:
+        user_id:
+          type: integer
+        location_id:
+          type: integer
+        exhibit_name:
+          type: string
+        description:
+          type: string
+        visibility:
+          type: string
+          enum: [public, private]
+          default: public
+
+    ExhibitObject:
+      type: object
+      properties:
+        exhibit_object_id:
+          type: integer
+        exhibit_id:
+          type: integer
+        object_id:
+          type: integer
+        is_featured:
+          type: boolean
+        display_order:
+          type: integer
+        added_at:
+          type: string
+          format: date-time
+
+  responses:
+    BadRequest:
+      description: Invalid request data, parameter type, or validation failure.
+    NotFound:
+      description: The requested resource could not be found.
