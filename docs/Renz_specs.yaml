@@ -1,35 +1,406 @@
 openapi: 3.1.0
 info:
   title: Artist API
-  description: API for managing artists and their artworks.
+  description: api for artists and their artworks.
   version: 1.0.0
 servers:
-  - url: https://api.server.test/v1
+  - url: http://localhost:8000
+    description: local server
+tags:
+  - name: Root
+    description: api resources
+  - name: Artists
+    description: artist operations
 paths:
+  /:
+    get:
+      tags:
+        - Root
+      summary: get api resources
+      description: returns all available resources.
+      operationId: getRoot
+      responses:
+        "200":
+          description: resources found.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Root"
+              example:
+                resources:
+                  - name: artists
+                    uri: http://localhost:8000/artists
+                    description: get all artists.
+                  - name: artist
+                    uri: http://localhost:8000/artists/{artist_id}
+                    description: get an artist by id.
+
+        "406":
+          $ref: "#/components/responses/NotAcceptable"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+
   /artists:
     get:
-      summary: Get a list of artists
-      responses:
-        "200":
-          description: OK
-  /artists/{artistId}:
-    get:
-      summary: Get details of a specific artist
+      tags:
+        - Artists
+      summary: get all artists
+      description: gets artists using filters, sorting, and pagination.
+      operationId: getArtists
+
       parameters:
-        - name: artistId
-          in: path
-          required: true
-          schema:
-            type: string
+        - $ref: "#/components/parameters/FullName"
+        - $ref: "#/components/parameters/DisplayName"
+        - $ref: "#/components/parameters/Nationality"
+        - $ref: "#/components/parameters/BirthDate"
+        - $ref: "#/components/parameters/DeathDate"
+        - $ref: "#/components/parameters/Gender"
+        - $ref: "#/components/parameters/Sort"
+        - $ref: "#/components/parameters/Order"
+        - $ref: "#/components/parameters/Page"
+        - $ref: "#/components/parameters/PageSize"
+
       responses:
         "200":
-          description: OK
+          description: artists found.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Artist"
+              example:
+                - artist_id: 1
+                  full_name: Vincent van Gogh
+                  display_name: Van Gogh
+                  nationality: Dutch
+                  birth_date: "1853-03-30"
+                  death_date: "1890-07-29"
+                  gender: Male
+
+                - artist_id: 2
+                  full_name: Pablo Picasso
+                  display_name: Picasso
+                  nationality: Spanish
+                  birth_date: "1881-10-25"
+                  death_date: "1973-04-08"
+                  gender: Male
+
         "400":
-          description: Invalid artist ID
-        "404":
-          description: Artist not found
-  /test:
+          $ref: "#/components/responses/BadRequest"
+        "406":
+          $ref: "#/components/responses/NotAcceptable"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+
+  /artists/{artist_id}:
     get:
+      tags:
+        - Artists
+      summary: get artist by id
+      description: gets an artist using their id.
+      operationId: getArtistById
+      parameters:
+        - $ref: "#/components/parameters/ArtistId"
       responses:
         "200":
-          description: OK
+          description: artist found.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Artist"
+              example:
+                artist_id: 1
+                full_name: Vincent van Gogh
+                display_name: Van Gogh
+                nationality: Dutch
+                birth_date: "1853-03-30"
+                death_date: "1890-07-29"
+                gender: Male
+
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "406":
+          $ref: "#/components/responses/NotAcceptable"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+
+components:
+  schemas:
+    Artist:
+      type: object
+      description: artist information.
+      required:
+        - artist_id
+        - full_name
+      properties:
+        artist_id:
+          type: integer
+          minimum: 1
+          description: artist id.
+          examples:
+            - 1
+
+        full_name:
+          type: string
+          description: artist full name.
+          examples:
+            - Vincent van Gogh
+
+        display_name:
+          type: string
+          description: artist display name.
+          examples:
+            - Van Gogh
+
+        nationality:
+          type: string
+          description: artist nationality.
+          examples:
+            - Dutch
+
+        birth_date:
+          type:
+            - string
+            - "null"
+          format: date
+          description: artist birth date.
+          examples:
+            - "1853-03-30"
+
+        death_date:
+          type:
+            - string
+            - "null"
+          format: date
+          description: artist death date.
+          examples:
+            - "1890-07-29"
+
+        gender:
+          type: string
+          description: artist gender.
+          examples:
+            - Male
+
+    Error:
+      type: object
+      description: error information.
+      required:
+        - error
+      properties:
+        error:
+          type: object
+
+          required:
+            - code
+            - message
+
+          properties:
+            code:
+              type: integer
+              description: error status code.
+              examples:
+                - 400
+
+            message:
+              type: string
+              description: error message.
+              examples:
+                - invalid query parameter.
+
+    Root:
+      type: object
+      description: available api resources.
+      required:
+        - resources
+      properties:
+        resources:
+          type: array
+          items:
+            type: object
+
+            required:
+              - name
+              - uri
+              - description
+
+            properties:
+              name:
+                type: string
+                description: resource name.
+
+              uri:
+                type: string
+                description: resource url.
+
+              description:
+                type: string
+                description: resource description.
+
+  parameters:
+    ArtistId:
+      name: artist_id
+      in: path
+      required: true
+      description: artist id.
+      schema:
+        type: integer
+        minimum: 1
+      example: 1
+
+    FullName:
+      name: full_name
+      in: query
+      required: false
+      description: filter by full name.
+      schema:
+        type: string
+      example: Vincent
+
+    DisplayName:
+      name: display_name
+      in: query
+      required: false
+      description: filter by display name.
+      schema:
+        type: string
+      example: Van Gogh
+
+    Nationality:
+      name: nationality
+      in: query
+      required: false
+      description: filter by nationality.
+      schema:
+        type: string
+      example: Dutch
+
+    BirthDate:
+      name: birth_date
+      in: query
+      required: false
+      description: filter by birth date.
+      schema:
+        type: string
+        format: date
+      example: "1853-03-30"
+
+    DeathDate:
+      name: death_date
+      in: query
+      required: false
+      description: filter by death date.
+      schema:
+        type: string
+        format: date
+      example: "1890-07-29"
+
+    Gender:
+      name: gender
+      in: query
+      required: false
+      description: filter by gender.
+      schema:
+        type: string
+      example: Male
+
+    Sort:
+      name: sort
+      in: query
+      required: false
+      description: field to sort by.
+      schema:
+        type: string
+        enum:
+          - artist_id
+          - full_name
+          - display_name
+          - nationality
+          - birth_date
+          - death_date
+          - gender
+        default: artist_id
+      example: full_name
+
+    Order:
+      name: order
+      in: query
+      required: false
+      description: sorting direction.
+      schema:
+        type: string
+        enum:
+          - asc
+          - desc
+        default: asc
+      example: desc
+
+    Page:
+      name: page
+      in: query
+      required: false
+      description: page number.
+      schema:
+        type: integer
+        minimum: 1
+        default: 1
+      example: 2
+
+    PageSize:
+      name: page_size
+      in: query
+      required: false
+      description: number of items per page.
+      schema:
+        type: integer
+        minimum: 1
+        default: 10
+      example: 5
+
+  responses:
+    BadRequest:
+      description: invalid request.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+          example:
+            error:
+              code: 400
+              message: invalid query parameter.
+
+    NotFound:
+      description: resource not found.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+          example:
+            error:
+              code: 404
+              message: artist not found.
+
+    NotAcceptable:
+      description: unsupported media type.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+          example:
+            error:
+              code: 406
+              message: unsupported response type.
+
+    InternalServerError:
+      description: server error.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+          example:
+            error:
+              code: 500
+              message: internal server error.

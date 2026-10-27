@@ -76,6 +76,8 @@ class ArtistModel extends BaseModel
             throw new \InvalidArgumentException("Invalid sort order: {$order}");
         }
 
+        $this->setPaginationOptions((int)($filters['page'] ?? 1), (int)($filters['page_size'] ?? 10));
+
         $sql .= " ORDER BY {$sortMap[$sortBy]} {$order}";
 
         $artists = $this->paginate($sql, $filter_values);
