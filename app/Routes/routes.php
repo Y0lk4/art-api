@@ -8,6 +8,7 @@ use App\Controllers\ExhibitController;
 use App\Controllers\CultureController;
 use App\Helpers\DateTimeHelper;
 use App\Controllers\ExhibitObjectController;
+use App\Controllers\ArtistController;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
 use App\Controllers\ArtController;
@@ -27,10 +28,16 @@ return static function (Slim\App $app): void {
     $app->get('/exhibits/objects', [ExhibitObjectController::class, 'handleGetExhibitObjects']);
     $app->get('/exhibits/objects/{exhibit_object_id}', [ExhibitObjectController::class, 'handleGetByExhibitObjectId']);
     $app->get('/exhibits/{exhibit_id}/objects', [ExhibitObjectController::class, 'handleGetByExhibitId']);
+    
+
+    $app->get('/artists', [ArtistController::class, 'handleGetArtists']);
+    $app->get('/artists/{artist_id}', [ArtistController::class, 'handleGetArtistById']);
 
     //* ROUTE: POST /exhibits
     $app->post('/exhibits', [ExhibitController::class, 'handleCreateExhibit']);
 
+    //* ROUTE: POST /artists
+    $app->post('/artists', [ArtistController::class, 'handleCreateArtist']);
     $artifacts = $app->group('/artifacts', function (Slim\Routing\RouteCollectorProxy $group) {
         $group->get('', [ArtController::class, 'handleGetArtifacts']);
         $group->get('/{artifact_id}', [ArtController::class, 'handleGetArtifactById']);
