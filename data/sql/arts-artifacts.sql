@@ -2,8 +2,10 @@
 -- Art & Artifacts Database Schema & Seed Data
 -- Standardized on Museum Cataloging Standards (Object-centric terminology)
 -- =====================================================================
-
--- ---------------------------------------------------------------------
+DROP DATABASE IF EXISTS artifacts;
+CREATE DATABASE artifacts;
+USE artifacts;
+-- ------------------------------------P---------------------------------
 -- 1. Table: department
 -- ---------------------------------------------------------------------
 CREATE TABLE department (
