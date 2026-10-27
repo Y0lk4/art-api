@@ -94,7 +94,7 @@ class ArtistModel extends BaseModel
     public function getArtistById(int $id): array | false
     {
         $sql = "SELECT * FROM artist WHERE artist_id = :artist_id";
-        return $this->fetchSingle($sql, [':artist_id' => $id]);
+        return $this->fetchSingle($sql, ['artist_id' => $id]);
     }
 
     /**
