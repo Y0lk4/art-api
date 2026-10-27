@@ -4,6 +4,7 @@ namespace App\Domain\Models;
 
 class ExhibitObjectModel extends BaseModel
 {
+    //! not to be confused with artifacts, they're the same but this is tied to exhibits, not just the artifact itself
     public function getExhibitObjects(array $filters): array
     {
 

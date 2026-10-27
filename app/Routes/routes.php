@@ -22,16 +22,20 @@ return static function (Slim\App $app): void {
     //* ROUTE: GET /
     $app->get('/', [AboutController::class, 'handleAboutWebService']);
     $app->get('/exhibits', [ExhibitController::class, 'handleGetExhibits']);
-    $app->get('/exhibits/{exhibit_id}', [ExhibitController::class, 'handleGetByExhibitId']);
-    $app->get('/exhibits/{location_id}', [ExhibitController::class, 'handleGetByLocationId']);
+    
 
     $app->get('/exhibits/objects', [ExhibitObjectController::class, 'handleGetExhibitObjects']);
+    $app->get('/exhibits/location/{location_id}', [ExhibitController::class, 'handleGetByLocationId']);
+
+    
     $app->get('/exhibits/objects/{exhibit_object_id}', [ExhibitObjectController::class, 'handleGetByExhibitObjectId']);
     $app->get('/exhibits/{exhibit_id}/objects', [ExhibitObjectController::class, 'handleGetByExhibitId']);
     
 
     $app->get('/artists', [ArtistController::class, 'handleGetArtists']);
     $app->get('/artists/{artist_id}', [ArtistController::class, 'handleGetArtistById']);
+
+    $app->get('/exhibits/{exhibit_id}', [ExhibitController::class, 'handleGetByExhibitId']);
 
     //* ROUTE: POST /exhibits
     $app->post('/exhibits', [ExhibitController::class, 'handleCreateExhibit']);
@@ -104,6 +108,4 @@ return static function (Slim\App $app): void {
     $app->get('/cultures/{culture_id}', [CultureController::class, 'handleGetCultureById']);
     $app->get('/cultures/{culture_id}/anthropology', [CultureController::class, 'handleGetCultureAnthropology']);
     $app->get('/cultures/{culture_id}/timeline', [CultureController::class, 'handleGetCultureTimeline']);
-
-
 };
