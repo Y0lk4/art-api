@@ -138,16 +138,16 @@
         },
         {
             "name": "frostybee/valicomb",
-            "version": "v1.3.0",
+            "version": "v1.5.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/frostybee/valicomb.git",
-                "reference": "0f98825c2b720d1fab07cc702002dfb60717da7a"
+                "reference": "ad314f84cc01b84b14236b9584fdd5bd9c5c2c34"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/frostybee/valicomb/zipball/0f98825c2b720d1fab07cc702002dfb60717da7a",
-                "reference": "0f98825c2b720d1fab07cc702002dfb60717da7a",
+                "url": "https://api.github.com/repos/frostybee/valicomb/zipball/ad314f84cc01b84b14236b9584fdd5bd9c5c2c34",
+                "reference": "ad314f84cc01b84b14236b9584fdd5bd9c5c2c34",
                 "shasum": ""
             },
             "require": {
@@ -193,9 +193,9 @@
             ],
             "support": {
                 "issues": "https://github.com/frostybee/valicomb/issues",
-                "source": "https://github.com/frostybee/valicomb/tree/v1.3.0"
+                "source": "https://github.com/frostybee/valicomb/tree/v1.5.0"
             },
-            "time": "2026-10-27T05:36:36+00:00"
+            "time": "2026-10-28T03:39:16+00:00"
         },
         {
             "name": "guzzlehttp/guzzle",

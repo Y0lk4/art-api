@@ -16,29 +16,62 @@ abstract class BaseService
 {
 
     private ?Validator $v = null;
-    //*NOTES: This class is not used yet. It is a placeholder for future services.
     //*NOTES: Here, you can define common methods for all services such as logging, validation, etc.
     public function __construct()
     {
         $this->v = new Validator([]);
     }
-
-    public function validateInteger(array $data)
+    /**
+     * Summary of validateInteger
+     * @param array $data
+     * @return void
+     */
+    public function validateID(array $data, string $parameterName, string $idName): bool | array
     {
         $this->v->withData($data);
-        $this->v->rule('required', 'integer');
+        $this->v->rule('required', $parameterName, $idName)
+            ->rule('integer', $parameterName, $idName);
+
+        if ($this->v->validate()) {
+            return true;
+        } else {
+            return false;
+        }
     }
-
-    public function validateRange(array $data, int $min, int $max)
+    /**
+     * Summary of validateRange
+     * @param array $data
+     * @param int $min
+     * @param int $max
+     * @return void
+     */
+    public function validateRange(array $data, string $parameterName, int $min, int $max): bool | array
     {
         $this->v->withData($data);
-        $this->v->rule('between', [$min, $max]);
+        $this->v->rule('between', $parameterName, [$min, $max]);
+
+        if ($this->v->validate()) {
+            return true;
+        } else {
+            return false;
+        }
     }
-
-    public function validateDate(array $data, string $date)
+    /**
+     * Summary of validateDate
+     * @param array $data
+     * @param string $date
+     * @return void
+     */
+    public function validateDate(array $data, string $parameterName, string $date): bool | array
     {
         $this->v->withData($data);
-        $this->v->rule('date', $date);
+        $this->v->rule('date', $parameterName, $date);
+
+        if ($this->v->validate()) {
+            return true;
+        } else {
+            return false;
+        }
     }
 
     /**
@@ -51,11 +84,17 @@ abstract class BaseService
      *      array: [banana, apple, grapes]
      *      returns true;
      */
-    public function isInArray(array $data, array $array): bool
+    public function isInArray(array $data, string $parameterName, array $array): bool | array
     {
         //how to make it not case sensitive
         $this->v->withData($data);
-        $this->v->rule('in', $array);
+        $this->v->forFields([
+            $parameterName => [[
+                'in',
+                $array,
+                'ignoreCase' => true
+            ]],
+        ]);
         if ($this->v->validate()) {
             return true;
         } else {
@@ -69,9 +108,14 @@ abstract class BaseService
      * @param string $dataName the name of the data that is supposed to be a boolean
      * @return void
      */
-    public function validateBoolean(array $data, string $dataName)
+    public function validateBoolean(array $data, string $parameterName, string $bool): bool | array
     {
         $this->v->withData($data);
-        $this->v->rule('boolean', $dataName);
+        $this->v->rule('boolean', $parameterName, $bool);
+        if ($this->v->validate()) {
+            return true;
+        } else {
+            return false;
+        }
     }
 }
